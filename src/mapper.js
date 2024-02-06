@@ -31,7 +31,7 @@ export const mapper = ({
   omit = DEFAULT_OMIT_FIELDS,
   transform = {},
 } = {}) => async (o, ctx = {}) => {
-  const decrypted = (ctx.decrypt && ctx.decrypt(o)) || o;
+  const decrypted = (ctx.decrypt && await ctx.decrypt(o)) || o;
 
   const transformed = {
     ...decrypted,
