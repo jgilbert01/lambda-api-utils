@@ -25,25 +25,25 @@ export const DEFAULT_OMIT_FIELDS = [
 
 export const DEFAULT_RENAME = { pk: 'id' };
 
-// TODO sync version
-
 export const mapper = ({
   defaults = {},
   rename = DEFAULT_RENAME,
   omit = DEFAULT_OMIT_FIELDS,
   transform = {},
 } = {}) => async (o, ctx = {}) => {
+  const decrypted = (ctx.decrypt && ctx.decrypt(o)) || o;
+
   const transformed = {
-    ...o,
+    ...decrypted,
     ...(await Object.keys(transform).reduce(async (a, k) => {
       a = await a;
-      if (o[k]) a[k] = await transform[k](o[k], ctx);
+      if (decrypted[k]) a[k] = await transform[k](decrypted[k], ctx);
       return a;
     }, {})),
   };
 
   const renamed = {
-    ...o,
+    ...decrypted,
     ...Object.keys(rename).reduce((a, k) => {
       if (transformed[k]) a[rename[k]] = transformed[k];
       return a;

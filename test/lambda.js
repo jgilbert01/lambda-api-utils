@@ -2,6 +2,7 @@ import {
   DynamoDBConnector,
   debug,
   cors,
+  encryption,
   getClaims,
   forRole,
   forOrganization,
@@ -48,6 +49,10 @@ const models = (req, res, next) => {
         debug: req.namespace.debug,
         connector,
         claims,
+        encryption: encryption({
+          ...process.env,
+          debug: req.namespace.debug,
+        }),
       }),
     },
   });

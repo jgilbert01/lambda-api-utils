@@ -53,6 +53,7 @@
     "@babel/preset-env": "^7.10.0",
     "@babel/register": "^7.10.0",
     "@babel/runtime": "^7.10.0",
+    "aws-kms-ee": "^0.14.0",
     "aws-sdk": "^2.578.0",
     "aws-sdk-mock": "^4.5.0",
     "babel-eslint": "^10.0.0",
@@ -71,6 +72,7 @@
     "lint-staged": "^9.4.3",
     "lambda-api": "^0.11.2",
     "lodash": "^4.17.15",
+    "memory-cache": "^0.2.0",
     "mocha": "^10.2.0",
     "nyc": "^14.1.1",
     "sinon": "^7.5.0",
@@ -78,11 +80,13 @@
     "uuid": "^3.3.3"
   },
   "peerDependencies": {
+    "aws-kms-ee": "0.x",
     "bluebird": "^3.7.1",
     "debug": "^4.1.1",
     "highland": "^2.13.5",
     "lambda-api": "^0.11.2",
     "lodash": "^4.17.15",
+    "memory-cache": "0.x",
     "uuid": "^3.3.3"
   }
 }

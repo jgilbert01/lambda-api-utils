@@ -6,6 +6,8 @@ import {
 
 export const DISCRIMINATOR = 'thing';
 
+export const EEM = {};
+
 export const MAPPER = mapper();
 
 const AGGREGATE_MAPPER = aggregateMapper({
@@ -24,10 +26,12 @@ class Model {
     debug,
     connector,
     claims = { sub: 'system' },
+    encryption,
   } = {}) {
     this.debug = debug;
     this.connector = connector;
     this.claims = claims;
+    this.encryption = encryption;
   }
 
   query({ last, limit /* more params here */ }) {
@@ -43,13 +47,13 @@ class Model {
         ...response,
         data: await Promise.all(response.data
           .filter(deletedFilter)
-          .map((e) => MAPPER(e))),
+          .map((e) => MAPPER(e, { ...this.encryption }))),
       }));
   }
 
   get(id) {
     return this.connector.get(id)
-      .then((data) => AGGREGATE_MAPPER(data));
+      .then((data) => AGGREGATE_MAPPER(data, { ...this.encryption }));
   }
 
   save(id, input) {
@@ -67,7 +71,7 @@ class Model {
           pk: id,
           sk: DISCRIMINATOR,
         },
-        inputParams: {
+        inputParams: this.encryption.encrypt(EEM, {
           ...thing,
           discriminator: DISCRIMINATOR,
           timestamp,
@@ -76,7 +80,7 @@ class Model {
           latched,
           ttl: _ttl,
           awsregion,
-        },
+        }),
       },
       // elements are optional
       // they can be added/updated here but not deleted
@@ -89,7 +93,7 @@ class Model {
       //       pk: id.toString(),
       //       sk: `${Element.ALIAS}|${elementId}`,
       //     },
-      //     inputParams: {
+      //     inputParams: this.encryption.encrypt(Element.EEM, {
       //       lastModifiedBy,
       //       timestamp,
       //       ...element,
@@ -98,7 +102,7 @@ class Model {
       //       latched,
       //       ttl: _ttl,
       //       awsregion,
-      //     },
+      //     }),
       //   };
       // }),
     ]);

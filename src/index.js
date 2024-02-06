@@ -9,6 +9,7 @@ export const now = () => Date.now();
 // });
 
 export * from './connectors';
+export { default as encryption } from './encryption';
 export * from './jwt';
 export * from './mapper';
 export * from './middleware';
