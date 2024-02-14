@@ -56,7 +56,7 @@ class Model {
       .then((data) => AGGREGATE_MAPPER(data, { ...this.encryption }));
   }
 
-  save(id, input) {
+  async save(id, input) {
     const { elements, ...thing } = input;
     const timestamp = now();
     const lastModifiedBy = this.claims.sub;
@@ -71,7 +71,7 @@ class Model {
           pk: id,
           sk: DISCRIMINATOR,
         },
-        inputParams: this.encryption.encrypt(EEM, {
+        inputParams: await this.encryption.encrypt(EEM, {
           ...thing,
           discriminator: DISCRIMINATOR,
           timestamp,
@@ -93,7 +93,7 @@ class Model {
       //       pk: id.toString(),
       //       sk: `${Element.ALIAS}|${elementId}`,
       //     },
-      //     inputParams: this.encryption.encrypt(Element.EEM, {
+      //     inputParams: await this.encryption.encrypt(Element.EEM, {
       //       lastModifiedBy,
       //       timestamp,
       //       ...element,
