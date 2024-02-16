@@ -1,6 +1,7 @@
 import {
-  now, ttl, deletedFilter, aggregateMapper, mapper,
+  now, deletedFilter, aggregateMapper, mapper,
 } from '../../../src';
+import { ttl } from '../../../src/connectors/dynamodb';
 
 // import * as Element from './element';
 

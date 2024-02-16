@@ -1,6 +1,7 @@
 import {
-  now, ttl, mapper, sortKeyTransform,
+  now, mapper, sortKeyTransform,
 } from '../../../src';
+import { ttl } from '../../../src/connectors/dynamodb';
 
 export const DISCRIMINATOR = 'element';
 export const ALIAS = 'elements';

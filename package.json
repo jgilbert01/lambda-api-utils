@@ -1,7 +1,7 @@
 {
   "name": "lambda-api-utils",
   "version": "0.1.0",
-  "description": "This library contains the utilities I use with the Lambda-Api to create rest endpoints in BFF microservices.",
+  "description": "This library contains the utilities for use with the Lambda-Api to create rest endpoints in BFF microservices.",
   "keywords": [
     "aws",
     "lambda",
@@ -9,7 +9,9 @@
     "api gateway",
     "dynamodb",
     "s3",
-    "serverless"
+    "serverless",
+    "aws-lambda-stream",
+    "aws-kms-ee"
   ],
   "author": "John Gilbert",
   "license": "MIT",
