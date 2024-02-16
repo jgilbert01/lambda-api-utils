@@ -1,6 +1,6 @@
 # lambda-api-utils
 
-This library contains the utilities for use with the [Lambda-Api](https://www.npmjs.com/package/lambda-api) to create rest endpoints in BFF services.
+This library contains utilities for use with the [Lambda-Api](https://www.npmjs.com/package/lambda-api) to create rest endpoints in BFF services.
 
 ## Middleware
 
