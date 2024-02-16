@@ -6,7 +6,7 @@ import {
   getUsername, getClaims, getUserGroups, forRole, forOrganization,
 } from '../../src/jwt';
 
-describe('utils/index.js', () => {
+describe('jwt.js', () => {
   afterEach(sinon.restore);
 
   it('should get claims', () => {

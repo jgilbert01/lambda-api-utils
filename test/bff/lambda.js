@@ -1,16 +1,17 @@
 import {
-  DynamoDBConnector,
-  debug,
+  logger,
   cors,
-  encryption,
   getClaims,
-  forRole,
-  forOrganization,
+  // forRole,
+  // forOrganization,
   errorHandler,
   // serializer,
-} from '../src';
+} from '../../src';
 
-import Model from './model';
+import encryption from '../../src/encryption';
+import DynamoDBConnector from '../../src/connectors/dynamodb';
+import Model from './models/thing';
+// import ElementModel from './models/element';
 
 const queryThings = (req, res) => req.namespace.models.thing
   .query({ ...req.params, ...req.query })
@@ -36,24 +37,24 @@ const api = require('lambda-api')({
 });
 
 const models = (req, res, next) => {
+  const { debug } = req.namespace;
   const claims = getClaims(req.requestContext);
   const connector = new DynamoDBConnector({
-    debug: req.namespace.debug,
+    debug,
     tableName: process.env.ENTITY_TABLE_NAME,
+  });
+  const encryptor = encryption({
+    ...process.env,
+    debug,
   });
 
   api.app({
     debug: req.namespace.debug,
     models: {
       thing: new Model({
-        debug: req.namespace.debug,
-        connector,
-        claims,
-        encryption: encryption({
-          ...process.env,
-          debug: req.namespace.debug,
-        }),
+        debug, connector, claims, encryptor,
       }),
+      // element: new ElementModel({ debug, connector, claims, encryptor }),
     },
   });
 
@@ -61,7 +62,7 @@ const models = (req, res, next) => {
 };
 
 api.use(cors);
-api.use(debug(api));
+api.use(logger(api));
 api.use(errorHandler);
 api.use(models);
 

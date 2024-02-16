@@ -1,6 +1,6 @@
 import zlib from 'zlib';
 
-export const debug = (api) => (req, res, next) => {
+export const logger = (api) => (req, res, next) => {
   api.app({
     debug: require('debug')(`handler${req.app._event.path.split('/').join(':')}`),
   });

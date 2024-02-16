@@ -34,6 +34,7 @@
       "env": {
         "AWS_REGION": "us-west-2",
         "KMS_REGIONS": "us-west-2",
+        "MASTER_KEY_ALIAS": "alias/aws-kms-ee",
         "NODE_ENV": "test"
       }
     }

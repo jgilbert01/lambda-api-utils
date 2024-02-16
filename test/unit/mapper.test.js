@@ -6,7 +6,7 @@ import {
   mapper, aggregateMapper, DEFAULT_OMIT_FIELDS, sortKeyTransform, deletedFilter,
 } from '../../src/mapper';
 
-describe('utils/index.js', () => {
+describe('mapper.js', () => {
   afterEach(sinon.restore);
 
   it('should filter out soft deleted items', async () => {
@@ -103,6 +103,8 @@ describe('utils/index.js', () => {
       },
     });
 
+    const ctx = { decrypt: async (data) => data };
+
     const mapped = await mappings([
       {
         pk: '1',
@@ -147,7 +149,7 @@ describe('utils/index.js', () => {
         data: 'thing0',
         f1: 'v1',
       },
-    ]);
+    ], ctx);
 
     // console.log('mapped: %s', JSON.stringify(mapped, null, 2));
 

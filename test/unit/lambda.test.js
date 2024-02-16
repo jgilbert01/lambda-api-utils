@@ -2,8 +2,8 @@ import 'mocha';
 import { expect } from 'chai';
 import sinon from 'sinon';
 
-import { handle } from '../lambda';
-import Model from '../model';
+import { handle } from '../bff/lambda';
+import Model from '../bff/models/thing';
 
 describe('lambda/index.js', () => {
   afterEach(sinon.restore);

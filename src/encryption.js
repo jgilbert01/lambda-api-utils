@@ -12,14 +12,14 @@ const encryptData = ({
   masterKeyAlias = process.env.MASTER_KEY_ALIAS,
   regions = (process.env.KMS_REGIONS && process.env.KMS_REGIONS.split(',')),
   AES = process.env.AES || true,
-} = {}) => async (eem, data) => {
+}) => async (eem, data) => {
   const result = await encryptObject(data, {
     masterKeyAlias,
     regions,
     ...eem, // fields and overrides
     AES,
   })
-  // .tap(debug)
+    // .tap(debug)
     .tapCatch(debug);
 
   return {
@@ -37,7 +37,7 @@ const decryptData = ({
   debug,
   eemField = 'eem',
   AES = process.env.AES || true,
-} = {}) => async (data) => {
+}) => async (data) => {
   if (isEmpty(data)) return data;
   if (!data[eemField]) return data;
 
@@ -45,7 +45,7 @@ const decryptData = ({
     ...data[eemField],
     AES,
   })
-  // .tap(debug)
+    // .tap(debug)
     .tapCatch(debug);
 
   return result.object;

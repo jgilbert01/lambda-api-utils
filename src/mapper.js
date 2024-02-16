@@ -63,7 +63,7 @@ export const aggregateMapper = ({
   cardinality,
   mappers,
   delimiter = '|',
-}) => async (items, ctx = {}) => items
+}) => async (items, /* istanbul ignore next */ ctx = {}) => items
   .filter(deletedFilter)
   .reduce(async (a, c) => {
     a = await a;

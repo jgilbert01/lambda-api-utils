@@ -1,6 +1,6 @@
 import {
   now, ttl, deletedFilter, aggregateMapper, mapper,
-} from '../src';
+} from '../../../src';
 
 // import * as Element from './element';
 
@@ -26,12 +26,12 @@ class Model {
     debug,
     connector,
     claims = { sub: 'system' },
-    encryption,
+    encryptor,
   } = {}) {
     this.debug = debug;
     this.connector = connector;
     this.claims = claims;
-    this.encryption = encryption;
+    this.encryptor = encryptor;
   }
 
   query({ last, limit /* more params here */ }) {
@@ -47,13 +47,13 @@ class Model {
         ...response,
         data: await Promise.all(response.data
           .filter(deletedFilter)
-          .map((e) => MAPPER(e, { ...this.encryption }))),
+          .map((e) => MAPPER(e, { ...this.encryptor }))),
       }));
   }
 
   get(id) {
     return this.connector.get(id)
-      .then((data) => AGGREGATE_MAPPER(data, { ...this.encryption }));
+      .then((data) => AGGREGATE_MAPPER(data, { ...this.encryptor }));
   }
 
   async save(id, input) {
@@ -71,7 +71,7 @@ class Model {
           pk: id,
           sk: DISCRIMINATOR,
         },
-        inputParams: await this.encryption.encrypt(EEM, {
+        inputParams: await this.encryptor.encrypt(EEM, {
           ...thing,
           discriminator: DISCRIMINATOR,
           timestamp,
@@ -93,7 +93,7 @@ class Model {
       //       pk: id.toString(),
       //       sk: `${Element.ALIAS}|${elementId}`,
       //     },
-      //     inputParams: await this.encryption.encrypt(Element.EEM, {
+      //     inputParams: await this.encryptor.encrypt(Element.EEM, {
       //       lastModifiedBy,
       //       timestamp,
       //       ...element,
