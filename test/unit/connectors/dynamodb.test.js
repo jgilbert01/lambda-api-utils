@@ -2,18 +2,29 @@ import 'mocha';
 import { expect } from 'chai';
 import sinon from 'sinon';
 import debug from 'debug';
-import AWS from 'aws-sdk-mock';
+import {
+  DynamoDBDocumentClient,
+  QueryCommand,
+  UpdateCommand,
+} from '@aws-sdk/lib-dynamodb';
+import { mockClient } from 'aws-sdk-client-mock';
 
 import Connector, { updateExpression, ttl } from '../../../src/connectors/dynamodb';
 
 describe('connectors/dynamodb.js', () => {
+  let mockDdb;
+
+  beforeEach(() => {
+    mockDdb = mockClient(DynamoDBDocumentClient);
+  });
+
   afterEach(() => {
-    AWS.restore('DynamoDB.DocumentClient');
+    mockDdb.restore();
   });
 
   it('should update', async () => {
-    const spy = sinon.spy((params, cb) => cb(null, {}));
-    AWS.mock('DynamoDB.DocumentClient', 'update', spy);
+    const spy = sinon.spy((_) => ({}));
+    mockDdb.on(UpdateCommand).callsFake(spy);
 
     const data = await new Connector({ debug: debug('db'), tableName: 't1' })
       .update({
@@ -40,8 +51,8 @@ describe('connectors/dynamodb.js', () => {
   });
 
   it('should batch update', async () => {
-    const spy = sinon.spy((params, cb) => cb(null, {}));
-    AWS.mock('DynamoDB.DocumentClient', 'update', spy);
+    const spy = sinon.spy((_) => ({}));
+    mockDdb.on(UpdateCommand).callsFake(spy);
 
     const data = await new Connector({ debug: debug('db'), tableName: 't1' })
       .batchUpdate([
@@ -94,7 +105,7 @@ describe('connectors/dynamodb.js', () => {
   });
 
   it('should get by id', async () => {
-    const spy = sinon.spy((params, cb) => cb(null, {
+    const spy = sinon.spy((_) => ({
       Items: [{
         pk: '00000000-0000-0000-0000-000000000000',
         sk: 'thing',
@@ -102,8 +113,7 @@ describe('connectors/dynamodb.js', () => {
         timestamp: 1600051691001,
       }],
     }));
-
-    AWS.mock('DynamoDB.DocumentClient', 'query', spy);
+    mockDdb.on(QueryCommand).callsFake(spy);
 
     const data = await new Connector({ debug: debug('db'), tableName: 't1' })
       .get('00000000-0000-0000-0000-000000000000');
@@ -126,7 +136,7 @@ describe('connectors/dynamodb.js', () => {
   });
 
   it('should query - page 1', async () => {
-    const spy = sinon.spy((params, cb) => cb(null, {
+    const spy = sinon.spy((_) => ({
       LastEvaluatedKey: { pk: '1', sk: 'thing' },
       Items: [{
         pk: '1',
@@ -136,7 +146,7 @@ describe('connectors/dynamodb.js', () => {
       }],
     }));
 
-    AWS.mock('DynamoDB.DocumentClient', 'query', spy);
+    mockDdb.on(QueryCommand).callsFake(spy);
 
     const data = await new Connector({ debug: debug('db'), tableName: 't1' })
       .query({
@@ -170,7 +180,7 @@ describe('connectors/dynamodb.js', () => {
   });
 
   it('should query - page 1 - below limit', async () => {
-    const spy = sinon.spy((params, cb) => cb(null, {
+    const spy = sinon.spy((_) => ({
       LastEvaluatedKey: { pk: '1', sk: 'thing' },
       Items: [{
         pk: '1',
@@ -180,7 +190,7 @@ describe('connectors/dynamodb.js', () => {
       }],
     }));
 
-    AWS.mock('DynamoDB.DocumentClient', 'query', spy);
+    mockDdb.on(QueryCommand).callsFake(spy);
 
     const data = await new Connector({ debug: debug('db'), tableName: 't1' })
       .query({
@@ -219,7 +229,7 @@ describe('connectors/dynamodb.js', () => {
   });
 
   it('should query - page 2', async () => {
-    const spy = sinon.spy((params, cb) => cb(null, {
+    const spy = sinon.spy((_) => ({
       Items: [{
         pk: '2',
         sk: 'thing',
@@ -228,7 +238,7 @@ describe('connectors/dynamodb.js', () => {
       }],
     }));
 
-    AWS.mock('DynamoDB.DocumentClient', 'query', spy);
+    mockDdb.on(QueryCommand).callsFake(spy);
 
     const data = await new Connector({ debug: debug('db'), tableName: 't1' })
       .query({
@@ -283,9 +293,9 @@ describe('connectors/dynamodb.js', () => {
       },
     ];
 
-    const spy = sinon.spy((params, cb) => cb(null, responses.shift()));
+    const spy = sinon.spy((_) => responses.shift());
 
-    AWS.mock('DynamoDB.DocumentClient', 'query', spy);
+    mockDdb.on(QueryCommand).callsFake(spy);
 
     const data = await new Connector({ debug: debug('db'), tableName: 't1' })
       .queryAll({
