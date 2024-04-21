@@ -71,7 +71,7 @@ class Connector {
       ...updateExpression(inputParams),
     };
 
-    return this._executeCommand(new UpdateCommand(params))
+    return this._sendCommand(new UpdateCommand(params))
       .tap(this.debug)
       .tapCatch(this.debug);
   }
@@ -96,7 +96,7 @@ class Connector {
       ConsistentRead: !IndexName,
     };
 
-    return this._executeCommand(new QueryCommand(params))
+    return this._sendCommand(new QueryCommand(params))
       .tap(this.debug)
       .tapCatch(this.debug)
       .then((data) => data.Items);
@@ -134,7 +134,7 @@ class Connector {
 
     return _((push, next) => {
       params.ExclusiveStartKey = cursor;
-      return this._executeCommand(new QueryCommand(params))
+      return this._sendCommand(new QueryCommand(params))
         .tap(this.debug)
         .tapCatch(this.debug)
         .then((data) => {
@@ -200,7 +200,7 @@ class Connector {
 
     return _((push, next) => {
       params.ExclusiveStartKey = cursor;
-      return this._executeCommand(new QueryCommand(params))
+      return this._sendCommand(new QueryCommand(params))
         .tap(this.debug)
         .tapCatch(this.debug)
         .then((data) => {
@@ -230,7 +230,7 @@ class Connector {
       .toPromise(Promise);
   }
 
-  _executeCommand(command) {
+  _sendCommand(command) {
     return Promise.resolve(this.client.send(command))
       .tap(this.debug)
       .tapCatch(this.debug);
