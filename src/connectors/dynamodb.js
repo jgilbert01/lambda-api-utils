@@ -10,6 +10,8 @@ import Promise from 'bluebird';
 import _ from 'highland';
 import merge from 'lodash/merge';
 
+import { defaultDebugLogger } from '../log';
+
 export const ttl = (start, days) => Math.floor(start / 1000) + (60 * 60 * 24 * days);
 
 export const updateExpression = (Item) => {
@@ -51,6 +53,7 @@ class Connector {
   constructor({
     debug,
     tableName,
+    removeUndefinedValues = true,
     timeout = Number(process.env.DYNAMODB_TIMEOUT) || Number(process.env.TIMEOUT) || 1000,
   }) {
     this.debug = (msg) => debug('%j', msg);
@@ -60,8 +63,12 @@ class Connector {
         requestTimeout: timeout,
         connectionTimeout: timeout,
       }),
-      logger: { log: /* istanbul ignore next */ (msg) => debug('%s', msg.replace(/\n/g, '\r')) },
-    }));
+      logger: defaultDebugLogger(debug),
+    }), {
+      marshallOptions: {
+        removeUndefinedValues,
+      },
+    });
   }
 
   update(Key, inputParams) {
