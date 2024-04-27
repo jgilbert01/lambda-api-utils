@@ -1,25 +1,34 @@
 /* eslint import/no-extraneous-dependencies: ["error", {"devDependencies": true}] */
-import { config, S3 } from 'aws-sdk';
+import {
+  DeleteObjectCommand,
+  GetObjectCommand,
+  HeadObjectCommand,
+  ListObjectVersionsCommand,
+  ListObjectsV2Command,
+  PutObjectCommand,
+  S3Client,
+} from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import { NodeHttpHandler } from '@smithy/node-http-handler';
 import Promise from 'bluebird';
 
-config.setPromisesDependency(Promise);
+import { defaultDebugLogger } from '../log';
 
 class Connector {
-  constructor(
+  constructor({
     debug,
-    bucketName,
+    bucketName = process.env.BUCKET_NAME,
     timeout = Number(process.env.S3_TIMEOUT) || Number(process.env.TIMEOUT) || 1000,
-  ) {
+  }) {
     this.debug = (msg) => debug('%j', msg);
     this.bucketName = bucketName || /* istanbul ignore next */ 'undefined';
-    const options = {
-      httpOptions: {
-        timeout,
-        // agent: sslAgent,
-      },
-      logger: { log: /* istanbul ignore next */ (msg) => debug('%s', msg.replace(/\n/g, '\r')) },
-    };
-    this.s3 = new S3(options);
+    this.client = new S3Client({
+      requestHandler: new NodeHttpHandler({
+        requestTimeout: timeout,
+        connectionTimeout: timeout,
+      }),
+      logger: defaultDebugLogger(debug),
+    });
   }
 
   listObjects({
@@ -35,9 +44,7 @@ class Connector {
         : undefined,
     };
 
-    return this.s3.listObjectsV2(params).promise()
-      .tap(this.debug)
-      .tapCatch(this.debug)
+    return this._sendCommand(new ListObjectsV2Command(params))
       .then((data) => ({
         last: data.IsTruncated
           ? /* istanbul ignore next */ Buffer.from(JSON.stringify(data.NextContinuationToken)).toString('base64')
@@ -53,16 +60,11 @@ class Connector {
       ...other,
     };
 
-    return new Promise((resolve, reject) => {
-      this.s3.getSignedUrl(operation, params, (error, url) => {
-        /* istanbul ignore if */
-        if (error) {
-          reject(error);
-        } else {
-          resolve(url);
-        }
-      });
-    })
+    return Promise.resolve(getSignedUrl(this.client,
+      operation === 'putObject'
+        ? new PutObjectCommand(params)
+        : new GetObjectCommand(params),
+      other))
       .tap(this.debug)
       .tapCatch(this.debug);
   }
@@ -79,9 +81,7 @@ class Connector {
         : {}),
     };
 
-    return this.s3.listObjectVersions(params).promise()
-      .tap(this.debug)
-      .tapCatch(this.debug)
+    return this._sendCommand(new ListObjectVersionsCommand(params))
       .then((data) => ({
         last: data.IsTruncated
           ? /* istanbul ignore next */ Buffer.from(JSON.stringify({
@@ -100,9 +100,7 @@ class Connector {
       VersionId,
     };
 
-    return this.s3.headObject(params).promise()
-      .tap(this.debug)
-      .tapCatch(this.debug);
+    return this._sendCommand(new HeadObjectCommand(params));
   }
 
   deleteObject({ Bucket, Key, VersionId }) {
@@ -112,7 +110,11 @@ class Connector {
       VersionId,
     };
 
-    return this.s3.deleteObject(params).promise()
+    return this._sendCommand(new DeleteObjectCommand(params));
+  }
+
+  _sendCommand(command) {
+    return Promise.resolve(this.client.send(command))
       .tap(this.debug)
       .tapCatch(this.debug);
   }
