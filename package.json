@@ -89,6 +89,7 @@
     "uuid": "^9.0.1"
   },
   "peerDependencies": {
+    "@babel/runtime": "7.x",
     "@smithy/node-http-handler": "2.x",
     "@smithy/util-retry": "2.x",
     "aws-kms-ee": "1.x",
