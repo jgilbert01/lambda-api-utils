@@ -11,6 +11,7 @@ import {
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { NodeHttpHandler } from '@smithy/node-http-handler';
 import Promise from 'bluebird';
+import { omit, pick } from 'lodash';
 
 import { defaultDebugLogger } from '../log';
 
@@ -19,16 +20,31 @@ class Connector {
     debug,
     bucketName = process.env.BUCKET_NAME,
     timeout = Number(process.env.S3_TIMEOUT) || Number(process.env.TIMEOUT) || 1000,
+    additionalClientOpts = {},
   }) {
     this.debug = (msg) => debug('%j', msg);
     this.bucketName = bucketName || /* istanbul ignore next */ 'undefined';
-    this.client = new S3Client({
-      requestHandler: new NodeHttpHandler({
-        requestTimeout: timeout,
-        connectionTimeout: timeout,
-      }),
-      logger: defaultDebugLogger(debug),
-    });
+    this.client = Connector.getClient(debug, timeout, additionalClientOpts);
+  }
+
+  static clients;
+
+  static getClient(debug, timeout, additionalClientOpts) {
+    const addlRequestHandlerOpts = pick(additionalClientOpts, ['requestHandler']);
+    const addlClientOpts = omit(additionalClientOpts, ['requestHandler']);
+
+    if (!this.clients) {
+      this.clients = new S3Client({
+        requestHandler: new NodeHttpHandler({
+          requestTimeout: timeout,
+          connectionTimeout: timeout,
+          ...addlRequestHandlerOpts,
+        }),
+        logger: defaultDebugLogger(debug),
+        ...addlClientOpts,
+      });
+    }
+    return this.clients;
   }
 
   listObjects({
