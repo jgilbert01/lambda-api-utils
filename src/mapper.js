@@ -37,7 +37,7 @@ export const mapper = ({
     ...decrypted,
     ...(await Object.keys(transform).reduce(async (a, k) => {
       a = await a;
-      if (decrypted[k]) a[k] = await transform[k](decrypted[k], ctx);
+      if (decrypted[k]) a[k] = await transform[k](decrypted[k], decrypted, ctx);
       return a;
     }, {})),
   };
@@ -77,14 +77,14 @@ export const aggregateMapper = ({
       };
     } else {
       const role = c.sk.split(delimiter)[0];
-      if (!a[role]) {
-        if (cardinality[role] > 1) {
+      if (cardinality[role] > 1) {
+        if (!a[role]) {
           a[role] = [mapped];
         } else {
-          a[role] = mapped;
+          a[role].push(mapped);
         }
       } else {
-        a[role].push(mapped);
+        a[role] = mapped;
       }
 
       return a;

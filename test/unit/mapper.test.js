@@ -138,9 +138,17 @@ describe('mapper.js', () => {
       },
       {
         pk: '1',
+        sk: 'one2one|2',
+        discriminator: 'peer',
+        data: 'peer',
+        timestamp: 2,
+      },
+      {
+        pk: '1',
         sk: 'one2one|1',
         discriminator: 'peer',
         data: 'peer',
+        timestamp: 1,
       },
       {
         pk: '1',
@@ -168,8 +176,9 @@ describe('mapper.js', () => {
         },
       ],
       one2one: {
-        id: '1',
+        id: '2',
         name: 'peer',
+        timestamp: 2,
       },
       many2many: [
         {
