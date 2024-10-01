@@ -8,7 +8,7 @@ import {
 import { NodeHttpHandler } from '@smithy/node-http-handler';
 import Promise from 'bluebird';
 import _ from 'highland';
-import merge from 'lodash/merge';
+import { merge, omit, pick } from 'lodash';
 
 import { defaultDebugLogger } from '../log';
 
@@ -53,22 +53,40 @@ class Connector {
   constructor({
     debug,
     tableName,
+    convertEmptyValues,
     removeUndefinedValues = true,
     timeout = Number(process.env.DYNAMODB_TIMEOUT) || Number(process.env.TIMEOUT) || 1000,
+    additionalClientOpts = {},
   }) {
     this.debug = (msg) => debug('%j', msg);
     this.tableName = tableName || /* istanbul ignore next */ 'undefined';
-    this.client = DynamoDBDocumentClient.from(new DynamoDBClient({
-      requestHandler: new NodeHttpHandler({
-        requestTimeout: timeout,
-        connectionTimeout: timeout,
-      }),
-      logger: defaultDebugLogger(debug),
-    }), {
-      marshallOptions: {
-        removeUndefinedValues,
-      },
-    });
+    this.client = Connector.getClient(debug, convertEmptyValues, removeUndefinedValues, timeout, additionalClientOpts);
+  }
+
+  static clients;
+
+  static getClient(debug, convertEmptyValues, removeUndefinedValues, timeout, additionalClientOpts) {
+    const addlRequestHandlerOpts = pick(additionalClientOpts, ['requestHandler']);
+    const addlClientOpts = omit(additionalClientOpts, ['requestHandler']);
+
+    if (!this.clients) {
+      const dynamoClient = new DynamoDBClient({
+        requestHandler: new NodeHttpHandler({
+          requestTimeout: timeout,
+          connectionTimeout: timeout,
+          ...addlRequestHandlerOpts,
+        }),
+        logger: defaultDebugLogger(debug),
+        ...addlClientOpts,
+      });
+      this.clients = DynamoDBDocumentClient.from(dynamoClient, {
+        marshallOptions: {
+          convertEmptyValues,
+          removeUndefinedValues,
+        },
+      });
+    }
+    return this.clients;
   }
 
   update(Key, inputParams) {
