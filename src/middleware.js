@@ -33,3 +33,20 @@ export const serializer = (body) => {
   }
   return zlib.gzipSync(body).toString('base64');
 };
+
+export const validate = (schema) => (req, res, next) => {
+  try {
+    const validated = schema.parse({
+      params: req.params,
+      query: req.query,
+      body: req.body,
+    });
+    req.namespace?.debug('%j', { validated });
+    return next();
+  } catch (error) {
+    req.namespace?.debug('%j', { error });
+    return res.error(400, { errors: error.issues });
+  }
+};
+
+// TODO secrets

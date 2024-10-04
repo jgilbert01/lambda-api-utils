@@ -6,11 +6,12 @@ import {
   // forOrganization,
   errorHandler,
   // serializer,
+  validate,
 } from '../../src';
 
 import encryption from '../../src/encryption';
 import DynamoDBConnector from '../../src/connectors/dynamodb';
-import Model from './models/thing';
+import Model, { SCHEMA } from './models/thing';
 // import ElementModel from './models/element';
 
 const queryThings = (req, res) => req.namespace.models.thing
@@ -20,6 +21,10 @@ const queryThings = (req, res) => req.namespace.models.thing
 
 const getThing = (req, res) => req.namespace.models.thing
   .get(req.params.id)
+  .then((data) => res.status(200).json(data));
+
+const saveThing = (req, res) => req.namespace.models.thing
+  .save(req.params.id, req.body)
   .then((data) => res.status(200).json(data));
 
 const api = require('lambda-api')({
@@ -68,8 +73,9 @@ api.use(models);
 
 ['', `/api-${process.env.PROJECT}`]
   .forEach((prefix) => api.register((api) => { // eslint-disable-line no-shadow
-    api.get('/things', /* forOrganization, */ queryThings);
-    api.get('/things/:id', getThing);
+    api.get('/things', /* forOrganization, */ validate(SCHEMA.query), queryThings);
+    api.get('/things/:id', validate(SCHEMA.get), getThing);
+    api.put('/things/:id', validate(SCHEMA.save), saveThing);
   }, { prefix }));
 
 // eslint-disable-next-line import/prefer-default-export

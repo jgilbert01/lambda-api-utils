@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import {
   now, deletedFilter, aggregateMapper, mapper,
 } from '../../../src';
@@ -8,6 +9,38 @@ import { ttl } from '../../../src/connectors/dynamodb';
 export const DISCRIMINATOR = 'thing';
 
 export const EEM = {};
+
+export const SCHEMA = {
+  query: z.object({
+    params: z.object({}).strict(),
+    body: z.null(),
+    query: z.object({
+      name: z.string().min(1, { message: 'Name must be at least 1 character.' }),
+    }),
+  }),
+  get: z.object({
+    params: z.object({
+      id: z.string().uuid({ message: 'Invalid UUID.' }),
+    }),
+    query: z.object({}).strict(),
+    body: z.null(),
+  }),
+  save: z.object({
+    params: z.object({
+      id: z.string().uuid({ message: 'Invalid UUID.' }),
+    }),
+    query: z.object({}).strict(),
+    body: z.object({
+      name: z.string().min(1, { message: 'Name must be at least 1 character.' }),
+      email: z.string().email({ message: 'Invalid email address.' }),
+      phone: z.string(),
+      active: z.boolean(),
+      roles: z
+        .array(z.object({}).catchall(z.any()))
+        .nonempty({ message: 'A least 1 role is required.' }),
+    }),
+  }),
+};
 
 export const MAPPER = mapper();
 
