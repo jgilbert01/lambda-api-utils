@@ -48,5 +48,3 @@ export const validate = (schema) => (req, res, next) => {
     return res.error(400, { errors: error.issues });
   }
 };
-
-// TODO secrets
