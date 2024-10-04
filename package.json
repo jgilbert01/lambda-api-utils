@@ -1,6 +1,6 @@
 {
   "name": "lambda-api-utils",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "This library contains utilities for use with the Lambda-Api to create rest endpoints in BFF microservices.",
   "keywords": [
     "aws",
@@ -78,15 +78,16 @@
     "eslint-formatter-pretty": "^3.0.1",
     "eslint-plugin-import": "^2.18.2",
     "highland": "^2.13.5",
-    "lint-staged": "^9.4.3",
     "lambda-api": "^1.0.0",
+    "lint-staged": "^9.4.3",
     "lodash": "^4.17.15",
     "memory-cache": "^0.2.0",
     "mocha": "^10.2.0",
     "nyc": "^14.1.1",
     "sinon": "^17.0.1",
     "sinon-chai": "^3.7.0",
-    "uuid": "^9.0.1"
+    "uuid": "^9.0.1",
+    "zod": "^3.23.8"
   },
   "peerDependencies": {
     "@babel/runtime": "7.x",
@@ -99,6 +100,7 @@
     "lambda-api": "1.x",
     "lodash": "4.x",
     "memory-cache": "0.x",
-    "uuid": "9.x"
+    "uuid": "9.x",
+    "zod": "^3.23.8"
   }
 }
