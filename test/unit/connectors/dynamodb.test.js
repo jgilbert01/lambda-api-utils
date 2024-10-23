@@ -228,6 +228,52 @@ describe('connectors/dynamodb.js', () => {
     });
   });
 
+  it('should query - with range', async () => {
+    const spy = sinon.spy((_) => ({
+      LastEvaluatedKey: { pk: '1', sk: 'thing' },
+      Items: [{
+        pk: '1',
+        sk: 'thing',
+        name: 'thing1',
+        timestamp: 1600051691001,
+      }],
+    }));
+
+    mockDdb.on(QueryCommand).callsFake(spy);
+
+    const data = await new Connector({ debug: debug('db'), tableName: 't1' })
+      .query({
+        index: 'gsi1',
+        keyName: 'discriminator',
+        keyValue: 'thing',
+        rangeName: 'pk',
+        rangeBeginsWithValue: '1',
+        limit: 1,
+      });
+
+    expect(spy).to.have.been.calledOnce;
+    expect(spy).to.have.been.calledWith({
+      TableName: 't1',
+      IndexName: 'gsi1',
+      Limit: 1,
+      ExclusiveStartKey: undefined,
+      KeyConditionExpression: '#keyName = :keyName and begins_with(#rangeName, :rangeBeginsWithValue)',
+      ExpressionAttributeNames: { '#keyName': 'discriminator', '#rangeName': 'pk' },
+      ExpressionAttributeValues: { ':keyName': 'thing', ':rangeBeginsWithValue': '1' },
+      FilterExpression: undefined,
+      ScanIndexForward: undefined,
+    });
+    expect(data).to.deep.equal({
+      last: 'eyJwayI6IjEiLCJzayI6InRoaW5nIn0=',
+      data: [{
+        pk: '1',
+        sk: 'thing',
+        name: 'thing1',
+        timestamp: 1600051691001,
+      }],
+    });
+  });
+
   it('should query - page 2', async () => {
     const spy = sinon.spy((_) => ({
       Items: [{
@@ -334,6 +380,66 @@ describe('connectors/dynamodb.js', () => {
       },
       {
         pk: '2',
+        sk: 'thing',
+        name: 'thing2',
+        timestamp: 1600051691001,
+      }],
+    });
+  });
+
+  it('should query all - with range', async () => {
+    const responses = [
+      {
+        LastEvaluatedKey: { pk: '1', sk: 'thing' },
+        Items: [{
+          pk: '11',
+          sk: 'thing',
+          name: 'thing1',
+          timestamp: 1600051691001,
+        }],
+      },
+      {
+        Items: [{
+          pk: '12',
+          sk: 'thing',
+          name: 'thing2',
+          timestamp: 1600051691001,
+        }],
+      },
+    ];
+
+    const spy = sinon.spy((_) => responses.shift());
+
+    mockDdb.on(QueryCommand).callsFake(spy);
+
+    const data = await new Connector({ debug: debug('db'), tableName: 't1' })
+      .queryAll({
+        index: 'gsi1',
+        keyName: 'discriminator',
+        keyValue: 'thing',
+        rangeName: 'pk',
+        rangeBeginsWithValue: '1',
+      });
+    expect(spy).to.have.been.calledTwice;
+    expect(spy).to.have.been.calledWith({
+      TableName: 't1',
+      IndexName: 'gsi1',
+      ExclusiveStartKey: { pk: '1', sk: 'thing' },
+      KeyConditionExpression: '#keyName = :keyName and begins_with(#rangeName, :rangeBeginsWithValue)',
+      ExpressionAttributeNames: { '#keyName': 'discriminator', '#rangeName': 'pk' },
+      ExpressionAttributeValues: { ':keyName': 'thing', ':rangeBeginsWithValue': '1' },
+      FilterExpression: undefined,
+      ScanIndexForward: undefined,
+    });
+    expect(data).to.deep.equal({
+      data: [{
+        pk: '11',
+        sk: 'thing',
+        name: 'thing1',
+        timestamp: 1600051691001,
+      },
+      {
+        pk: '12',
         sk: 'thing',
         name: 'thing2',
         timestamp: 1600051691001,

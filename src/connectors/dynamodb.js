@@ -129,24 +129,28 @@ class Connector {
   }
 
   query({
-    index, keyName, keyValue, last, limit, ScanIndexForward,
+    index, keyName, keyValue, rangeName, rangeBeginsWithValue,
+    last, limit, ScanIndexForward,
     FilterExpression,
     ExpressionAttributeNames = {},
     ExpressionAttributeValues = {},
   }) {
+    const queryIncludesRange = rangeName && rangeBeginsWithValue;
+    const KeyConditionExpression = queryIncludesRange ? '#keyName = :keyName and begins_with(#rangeName, :rangeBeginsWithValue)' : '#keyName = :keyName';
+
     const params = {
       TableName: this.tableName,
       IndexName: index,
       Limit: limit || /* istanbul ignore next */ 25,
-      KeyConditionExpression: '#keyName = :keyName', // and begins_with(#rangeName, :rangeBeginsWithValue)
+      KeyConditionExpression,
       ExpressionAttributeNames: {
         '#keyName': keyName,
-        // '#rangeName': rangeName,
+        ...(queryIncludesRange ? { '#rangeName': rangeName } : {}),
         ...ExpressionAttributeNames,
       },
       ExpressionAttributeValues: {
         ':keyName': keyValue,
-        // ':rangeBeginsWithValue': rangeBeginWithValue,
+        ...(queryIncludesRange ? { ':rangeBeginsWithValue': rangeBeginsWithValue } : {}),
         ...ExpressionAttributeValues,
       },
       FilterExpression,
@@ -197,23 +201,26 @@ class Connector {
   }
 
   queryAll({
-    index, keyName, keyValue, ScanIndexForward,
-    FilterExpression,
+    index, keyName, keyValue, rangeName, rangeBeginsWithValue,
+    ScanIndexForward, FilterExpression,
     ExpressionAttributeNames = {},
     ExpressionAttributeValues = {},
   }) {
+    const queryIncludesRange = rangeName && rangeBeginsWithValue;
+    const KeyConditionExpression = queryIncludesRange ? '#keyName = :keyName and begins_with(#rangeName, :rangeBeginsWithValue)' : '#keyName = :keyName';
+
     const params = {
       TableName: this.tableName,
       IndexName: index,
-      KeyConditionExpression: '#keyName = :keyName', // and begins_with(#rangeName, :rangeBeginsWithValue)
+      KeyConditionExpression,
       ExpressionAttributeNames: {
         '#keyName': keyName,
-        // '#rangeName': rangeName,
+        ...(queryIncludesRange ? { '#rangeName': rangeName } : {}),
         ...ExpressionAttributeNames,
       },
       ExpressionAttributeValues: {
         ':keyName': keyValue,
-        // ':rangeBeginsWithValue': rangeBeginWithValue,
+        ...(queryIncludesRange ? { ':rangeBeginsWithValue': rangeBeginsWithValue } : {}),
         ...ExpressionAttributeValues,
       },
       FilterExpression,
