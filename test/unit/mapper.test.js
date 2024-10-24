@@ -157,34 +157,28 @@ describe('mapper.js', () => {
       id: '1',
       name: 'thing0',
       f1: 'v1',
-      discriminator: 'thing',
       one2many: [
         {
           id: '1',
           name: 'child1',
-          discriminator: 'child',
         },
         {
           id: '2',
           name: 'child2',
-          discriminator: 'child',
         },
       ],
       one2one: {
         id: '1',
         name: 'peer',
-        discriminator: 'peer',
       },
       many2many: [
         {
           id: '1',
           name: 'associate1',
-          discriminator: 'associate',
         },
         {
           id: '2',
           name: 'associate2',
-          discriminator: 'associate',
         },
       ],
     });

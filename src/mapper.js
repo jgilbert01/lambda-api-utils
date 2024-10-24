@@ -11,6 +11,7 @@ export const DEFAULT_OMIT_FIELDS = [
   'data2',
   'data3',
   'data4',
+  'discriminator', // retain ???
   'ttl',
   'latched',
   'deleted',
