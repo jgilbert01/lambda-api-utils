@@ -107,16 +107,18 @@ class Connector {
     );
   }
 
-  get(id, IndexName, pk) {
+  get(id, IndexName, pk, sk, skName) {
     const params = {
       TableName: this.tableName,
       IndexName,
-      KeyConditionExpression: '#pk = :pk',
+      KeyConditionExpression: sk ? '#pk = :pk and #sk = :sk' : '#pk = :pk',
       ExpressionAttributeNames: {
         '#pk': pk || 'pk',
+        ...(sk ? { '#sk': skName || 'sk' } : {}),
       },
       ExpressionAttributeValues: {
         ':pk': id,
+        ...(sk ? { ':sk': sk } : {}),
       },
       ConsistentRead: !IndexName,
     };
