@@ -135,6 +135,37 @@ describe('connectors/dynamodb.js', () => {
     }]);
   });
 
+  it('should get by id - with range', async () => {
+    const spy = sinon.spy((_) => ({
+      Items: [{
+        pk: '00000000-0000-0000-0000-000000000000',
+        sk: 'thing',
+        name: 'thing0',
+        timestamp: 1600051691001,
+      }],
+    }));
+    mockDdb.on(QueryCommand).callsFake(spy);
+
+    const data = await new Connector({ debug: debug('db'), tableName: 't1' })
+      .get('00000000-0000-0000-0000-000000000000', undefined, undefined, 'thing');
+
+    expect(spy).to.have.been.calledOnce;
+    expect(spy).to.have.been.calledWith({
+      TableName: 't1',
+      IndexName: undefined,
+      KeyConditionExpression: '#pk = :pk and #sk = :sk',
+      ExpressionAttributeNames: { '#pk': 'pk', '#sk': 'sk' },
+      ExpressionAttributeValues: { ':pk': '00000000-0000-0000-0000-000000000000', ':sk': 'thing' },
+      ConsistentRead: true,
+    });
+    expect(data).to.deep.equal([{
+      pk: '00000000-0000-0000-0000-000000000000',
+      sk: 'thing',
+      name: 'thing0',
+      timestamp: 1600051691001,
+    }]);
+  });
+
   it('should query - page 1', async () => {
     const spy = sinon.spy((_) => ({
       LastEvaluatedKey: { pk: '1', sk: 'thing' },
