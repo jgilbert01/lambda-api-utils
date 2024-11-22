@@ -3,6 +3,7 @@ import { expect } from 'chai';
 import sinon from 'sinon';
 import debug from 'debug';
 import {
+  DeleteCommand,
   DynamoDBDocumentClient,
   QueryCommand,
   UpdateCommand,
@@ -102,6 +103,27 @@ describe('connectors/dynamodb.js', () => {
       ReturnValues: 'ALL_NEW',
     });
     expect(data).to.deep.equal([{}, {}]);
+  });
+
+  it('should delete', async () => {
+    const spy = sinon.spy((_) => ({}));
+    mockDdb.on(DeleteCommand).callsFake(spy);
+
+    const data = await new Connector({ debug: debug('db'), tableName: 't1' })
+      .delete({
+        pk: '00000000-0000-0000-0000-000000000000',
+        sk: 'thing',
+      });
+
+    expect(spy).to.have.been.calledOnce;
+    expect(spy).to.have.been.calledWith({
+      TableName: 't1',
+      Key: {
+        pk: '00000000-0000-0000-0000-000000000000',
+        sk: 'thing',
+      },
+    });
+    expect(data).to.deep.equal({});
   });
 
   it('should get by id', async () => {

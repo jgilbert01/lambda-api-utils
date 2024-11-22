@@ -1,6 +1,7 @@
 /* eslint import/no-extraneous-dependencies: ["error", {"devDependencies": true}] */
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import {
+  DeleteCommand,
   DynamoDBDocumentClient,
   QueryCommand,
   UpdateCommand,
@@ -105,6 +106,17 @@ class Connector {
     return Promise.all(
       batch.map((req) => this.update(req.key, req.inputParams)),
     );
+  }
+
+  delete(Key) {
+    const params = {
+      TableName: this.tableName,
+      Key,
+    };
+
+    return this._sendCommand(new DeleteCommand(params))
+      .tap(this.debug)
+      .tapCatch(this.debug);
   }
 
   get(id, IndexName, pk, sk, skName) {
