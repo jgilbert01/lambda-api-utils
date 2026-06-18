@@ -478,6 +478,95 @@ describe('connectors/dynamodb.js', () => {
     });
   });
 
+  it('should query - with custom keyConditionExpression', async () => {
+    const spy = sinon.spy((_) => ({
+      Items: [{
+        pk: '1',
+        sk: 'thing',
+        name: 'thing1',
+        timestamp: 1600051691001,
+      }],
+    }));
+
+    mockDdb.on(QueryCommand).callsFake(spy);
+
+    const data = await new Connector({ debug: debug('db'), tableName: 't1' })
+      .query({
+        index: 'gsi1',
+        keyName: 'discriminator',
+        keyValue: 'thing',
+        keyConditionExpression: '#keyName = :keyName and #sk between :start and :end',
+        ExpressionAttributeNames: { '#sk': 'sk' },
+        ExpressionAttributeValues: { ':start': 'a', ':end': 'z' },
+        limit: 1,
+      });
+
+    expect(spy).to.have.been.calledOnce;
+    expect(spy).to.have.been.calledWith({
+      TableName: 't1',
+      IndexName: 'gsi1',
+      Limit: 1,
+      ExclusiveStartKey: undefined,
+      KeyConditionExpression: '#keyName = :keyName and #sk between :start and :end',
+      ExpressionAttributeNames: { '#keyName': 'discriminator', '#sk': 'sk' },
+      ExpressionAttributeValues: { ':keyName': 'thing', ':start': 'a', ':end': 'z' },
+      FilterExpression: undefined,
+      ScanIndexForward: undefined,
+    });
+    expect(data).to.deep.equal({
+      last: undefined,
+      data: [{
+        pk: '1',
+        sk: 'thing',
+        name: 'thing1',
+        timestamp: 1600051691001,
+      }],
+    });
+  });
+
+  it('should query all - with custom keyConditionExpression', async () => {
+    const spy = sinon.spy((_) => ({
+      Items: [{
+        pk: '1',
+        sk: 'thing',
+        name: 'thing1',
+        timestamp: 1600051691001,
+      }],
+    }));
+
+    mockDdb.on(QueryCommand).callsFake(spy);
+
+    const data = await new Connector({ debug: debug('db'), tableName: 't1' })
+      .queryAll({
+        index: 'gsi1',
+        keyName: 'discriminator',
+        keyValue: 'thing',
+        keyConditionExpression: '#keyName = :keyName and #sk between :start and :end',
+        ExpressionAttributeNames: { '#sk': 'sk' },
+        ExpressionAttributeValues: { ':start': 'a', ':end': 'z' },
+      });
+
+    expect(spy).to.have.been.calledOnce;
+    expect(spy).to.have.been.calledWith({
+      TableName: 't1',
+      IndexName: 'gsi1',
+      ExclusiveStartKey: undefined,
+      KeyConditionExpression: '#keyName = :keyName and #sk between :start and :end',
+      ExpressionAttributeNames: { '#keyName': 'discriminator', '#sk': 'sk' },
+      ExpressionAttributeValues: { ':keyName': 'thing', ':start': 'a', ':end': 'z' },
+      FilterExpression: undefined,
+      ScanIndexForward: undefined,
+    });
+    expect(data).to.deep.equal({
+      data: [{
+        pk: '1',
+        sk: 'thing',
+        name: 'thing1',
+        timestamp: 1600051691001,
+      }],
+    });
+  });
+
   it('should calculate updateExpression', () => {
     expect(updateExpression({
       id: '2f8ac025-d9e3-48f9-ba80-56487ddf0b89',
