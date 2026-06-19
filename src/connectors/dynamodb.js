@@ -132,13 +132,13 @@ class Connector {
 
   query({
     index, keyName, keyValue, rangeName, rangeBeginsWithValue,
-    last, limit, ScanIndexForward,
+    last, limit, ScanIndexForward, keyConditionExpression,
     FilterExpression,
     ExpressionAttributeNames = {},
     ExpressionAttributeValues = {},
   }) {
     const queryIncludesRange = rangeName && rangeBeginsWithValue;
-    const KeyConditionExpression = queryIncludesRange ? '#keyName = :keyName and begins_with(#rangeName, :rangeBeginsWithValue)' : '#keyName = :keyName';
+    const KeyConditionExpression = keyConditionExpression ?? (queryIncludesRange ? '#keyName = :keyName and begins_with(#rangeName, :rangeBeginsWithValue)' : '#keyName = :keyName');
 
     const params = {
       TableName: this.tableName,
@@ -203,13 +203,14 @@ class Connector {
   }
 
   queryAll({
-    index, keyName, keyValue, rangeName, rangeBeginsWithValue,
+    index, keyName, keyValue, rangeName, rangeBeginsWithValue, keyConditionExpression,
     ScanIndexForward, FilterExpression,
     ExpressionAttributeNames = {},
     ExpressionAttributeValues = {},
   }) {
     const queryIncludesRange = rangeName && rangeBeginsWithValue;
-    const KeyConditionExpression = queryIncludesRange ? '#keyName = :keyName and begins_with(#rangeName, :rangeBeginsWithValue)' : '#keyName = :keyName';
+    const KeyConditionExpression = keyConditionExpression
+      ?? (queryIncludesRange ? '#keyName = :keyName and begins_with(#rangeName, :rangeBeginsWithValue)' : '#keyName = :keyName');
 
     const params = {
       TableName: this.tableName,
