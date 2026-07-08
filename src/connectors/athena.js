@@ -100,7 +100,7 @@ export const pollQueryResult = async (connector, queryExecutionId, context) => {
   return status;
 };
 
-export const getResults = (connector, queryExecutionId, limit = 100, last) => connector.getQueryResults({
+export const getResults = (connector, queryExecutionId, limit, last) => connector.getQueryResults({
   QueryExecutionId: queryExecutionId,
   NextToken: last,
   MaxResults: limit,
