@@ -40,7 +40,7 @@ const FAKE_CTX_500 = {
   getRemainingTimeInMillis: () => 500,
 };
 
-describe.only('connectors/athena.js', () => {
+describe('connectors/athena.js', () => {
   describe('connector', () => {
     let mockAthena;
 
