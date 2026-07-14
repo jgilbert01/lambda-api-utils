@@ -44,6 +44,7 @@ export const mapper = ({
 
   const renamed = {
     ...decrypted,
+    ...transformed,
     ...Object.keys(rename).reduce((a, k) => {
       if (transformed[k]) a[rename[k]] = transformed[k];
       return a;

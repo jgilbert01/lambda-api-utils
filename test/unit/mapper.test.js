@@ -71,7 +71,100 @@ describe('mapper.js', () => {
       f9: true,
     });
   });
-
+  it('should transform default if present in call', async () => {
+    const mappings = mapper({
+      defaults: { f9: true },
+      omit: [...DEFAULT_OMIT_FIELDS, 'f1'],
+      rename: {
+        pk: 'id',
+        data: 'name',
+        f1: 'f2',
+        x1: 'else-coverage',
+      },
+      transform: {
+        f1: async (v) => v.toUpperCase(),
+        f3: (v) => v.toUpperCase(),
+        f9: (v) => 'else-coverage',
+      },
+    });
+    const mapData = await mappings({
+      pk: '1',
+      sk: 'thing',
+      data: 'thing0',
+      f3: 'test',
+      f1: 'v1',
+      f9: true,
+    });
+    expect(mapData).to.deep.equal({
+      id: '1',
+      name: 'thing0',
+      f2: 'V1',
+      f3: 'TEST',
+      f9: 'else-coverage',
+    });
+  });
+  it('should transform if not present in defaults', async () => {
+    const mappings = mapper({
+      omit: [...DEFAULT_OMIT_FIELDS, 'f1'],
+      rename: {
+        pk: 'id',
+        data: 'name',
+        f1: 'f2',
+        x1: 'else-coverage',
+      },
+      transform: {
+        f1: async (v) => v.toUpperCase(),
+        f3: (v) => v.toUpperCase(),
+        f9: (v) => 'will-transform',
+      },
+    });
+    const mapData = await mappings({
+      pk: '1',
+      sk: 'thing',
+      data: 'thing0',
+      f3: 'test',
+      f1: 'v1',
+      f9: true,
+    });
+    expect(mapData).to.deep.equal({
+      id: '1',
+      name: 'thing0',
+      f2: 'V1',
+      f3: 'TEST',
+      f9: 'will-transform',
+    });
+  });
+  it('should not transform default values', async () => {
+    const mappings = mapper({
+      defaults: { f9: true },
+      omit: [...DEFAULT_OMIT_FIELDS, 'f1'],
+      rename: {
+        pk: 'id',
+        data: 'name',
+        f1: 'f2',
+        x1: 'else-coverage',
+      },
+      transform: {
+        f1: async (v) => v.toUpperCase(),
+        f3: (v) => v.toUpperCase(),
+        f9: (v) => 'will-transform',
+      },
+    });
+    const mapData = await mappings({
+      pk: '1',
+      sk: 'thing',
+      data: 'thing0',
+      f3: 'test',
+      f1: 'v1',
+    });
+    expect(mapData).to.deep.equal({
+      id: '1',
+      name: 'thing0',
+      f2: 'V1',
+      f3: 'TEST',
+      f9: true,
+    });
+  });
   it('should map an aggregate object', async () => {
     const mapper1 = mapper({
       rename: {
