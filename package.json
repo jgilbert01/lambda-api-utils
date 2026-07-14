@@ -1,6 +1,6 @@
 {
   "name": "lambda-api-utils",
-  "version": "1.0.7",
+  "version": "1.1.0",
   "description": "This library contains utilities for use with the Lambda-Api to create rest endpoints in BFF microservices.",
   "keywords": [
     "aws",
